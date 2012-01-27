@@ -12,9 +12,23 @@
               <RDF:Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.6.0</em:minVersion> 
-                <em:maxVersion>9.*</em:maxVersion>
+                <em:maxVersion>15.*</em:maxVersion>
                 <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.4.xpi</em:updateLink>
-                <em:updateHash>sha1:49c31fa83aad64ebf954f7773e3c9d9b54c889bf</em:updateHash>
+                <em:updateHash>sha1:8338fec4a86e115b10993d15de82365f8efa97dd</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.0.3</em:version>
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.6.0</em:minVersion> 
+                <em:maxVersion>9.*</em:maxVersion>
+                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.3.xpi</em:updateLink>
+                <em:updateHash>sha1:192067ce7438b901a9aa172832014cf389bd51ae</em:updateHash>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
