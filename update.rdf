@@ -5,6 +5,7 @@
     <em:updates>
       <RDF:Seq>
         <!-- one li for each new release; newest first according to some sources -->
+        <!-- to get updateHash using cygwin : sha1sum /cygdrive/c/implicit-wait-x.x.x.xpi  -->
         <RDF:li>
           <RDF:Description>
             <em:version>1.0.4</em:version>
