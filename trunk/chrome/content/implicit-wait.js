@@ -81,7 +81,7 @@ var Function_Override_TestLoop_resume = function() {
 					editor.implicitwait.EnableLog = false;
 					return window.setTimeout(fnBind(this.resume, this), 20);
 				}else{
-					e = SeleniumError( "Implicit wait Timeout reached. " + e.message );
+					e = SeleniumError( "Implicit wait timeout reached. " + e.message );
 				}
 			}else{
 				e = SeleniumError( e.message );
