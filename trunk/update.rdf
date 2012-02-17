@@ -8,6 +8,20 @@
         <!-- to get updateHash using cygwin : sha1sum /cygdrive/c/implicit-wait-x.x.x.xpi  -->
         <RDF:li>
           <RDF:Description>
+            <em:version>1.0.6</em:version>
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.6.0</em:minVersion> 
+                <em:maxVersion>10.*</em:maxVersion>
+                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.6.xpi</em:updateLink>
+                <em:updateHash>sha1:19e83e1ad20204c94a22bf585c1f2d8867f37c75</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
             <em:version>1.0.4</em:version>
             <em:targetApplication>
               <RDF:Description>
@@ -16,20 +30,6 @@
                 <em:maxVersion>10.*</em:maxVersion>
                 <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.4.xpi</em:updateLink>
                 <em:updateHash>sha1:8338fec4a86e115b10993d15de82365f8efa97dd</em:updateHash>
-              </RDF:Description>
-            </em:targetApplication>
-          </RDF:Description>
-        </RDF:li>
-        <RDF:li>
-          <RDF:Description>
-            <em:version>1.0.3</em:version>
-            <em:targetApplication>
-              <RDF:Description>
-                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-                <em:minVersion>3.6.0</em:minVersion> 
-                <em:maxVersion>9.*</em:maxVersion>
-                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.3.xpi</em:updateLink>
-                <em:updateHash>sha1:192067ce7438b901a9aa172832014cf389bd51ae</em:updateHash>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
