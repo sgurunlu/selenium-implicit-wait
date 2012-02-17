@@ -29,7 +29,7 @@
                 <em:minVersion>3.6.0</em:minVersion> 
                 <em:maxVersion>10.*</em:maxVersion>
                 <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.4.xpi</em:updateLink>
-                <em:updateHash>sha1:8338fec4a86e115b10993d15de82365f8efa97dd</em:updateHash>
+                <em:updateHash>sha1:593f0d74a8234da0cf4baec940aa538c52b280f2</em:updateHash>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
