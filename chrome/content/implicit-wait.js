@@ -6,11 +6,10 @@ function ImplicitWait(editor) {
 	this.IsImplicitWaitAjaxActivated = false;
 	this.Timeout=editor.getOptions().timeout;
 	this.EnableLog=true;
-
 	editor.app.addObserver({
 		testSuiteChanged: function(testSuite) {
-			if ( !self.editor.selDebugger.isHooked) {
-				self.editor.selDebugger.isHooked = self.HookAnObjectMethodAfter(self.editor.selDebugger, 'init', self, self.InstallMethods);
+			if (!self.editor.selDebugger.isHooked) {
+				self.editor.selDebugger.isHooked = self.HookAnObjectMethodAfter(self.editor.selDebugger, 'init', self, self.InstallMethods);		
 			}
 		}
 	});
@@ -21,7 +20,7 @@ ImplicitWait.prototype.InstallMethods = function() {
 	this.editor.selDebugger.runner.IDETestLoop.prototype.getImplicitWaitTimeoutTime = Function_TestLoop_getImplicitWaitTimeoutTime;
 	this.editor.selDebugger.runner.PageBot.prototype.findElement = Function_Override_BrowserBot_findElement;
 	this.ConditionAnObjectMethod(this.editor.selDebugger.runner.LOG, 'log', this, this.getLogEnabled);
-	this.editor.selDebugger.runner.LOG.debug('Implicit Wait is installed');
+	this.editor.selDebugger.runner.LOG.debug('Implicit wait is installed');
 };
 
 ImplicitWait.prototype.getLogEnabled = function() {
@@ -46,6 +45,7 @@ var Function_Override_BrowserBot_findElement = function (locator, win){
 
 var Function_Override_TestLoop_resume = function() {
 	try {
+		var self=this;
 		if(this.abord) return;
 		if(editor.selDebugger.state == Debugger.PAUSE_REQUESTED){
 			return this.continueTestAtCurrentCommand();
@@ -53,17 +53,17 @@ var Function_Override_TestLoop_resume = function() {
 		if (editor.implicitwait.IsImplicitWaitAjaxActivated && !this.currentCommand.implicitElementWait_EndTime) {
 			if( !this.currentCommand.implicitAjaxWait_EndTime ){
 					this.currentCommand.implicitAjaxWait_EndTime = this.getImplicitWaitTimeoutTime();
-					return window.setTimeout(fnBind(this.resume, this), 3);
+					return window.setTimeout( function(){return self.resume.apply(self);}, 3);
 			}
 			if (new Date().getTime() > this.currentCommand.implicitAjaxWait_EndTime) {
-				throw new SeleniumError("Implicit wait Timeout reached while waiting for condition \"" + this.implicitAjaxWait_Condition  + "\"");
+				throw new SeleniumError("Implicit wait Timeout reached while waiting for condition \"" + editor.implicitwait.implicitAjaxWait_Condition  + "\"");
 			}else{
 				try{
-					ret=selenium.getEval(this.implicitAjaxWait_Condition);
+					ret=editor.selDebugger.runner.selenium.getEval(editor.implicitwait.implicitAjaxWait_Condition);
 				} catch (e) {
 					throw new SeleniumError("ImplicitWaitCondition failed : " + e.message );
 				}
-				if(!ret) return window.setTimeout(fnBind(this.resume, this), 20);
+				if(!ret) return window.setTimeout( function(){return self.resume.apply(self);}, 20);
 			}
 		}
 		if(editor.implicitwait.IsImplicitWaitLocatorActivated){
@@ -79,7 +79,7 @@ var Function_Override_TestLoop_resume = function() {
 			if(editor.implicitwait.IsImplicitWaitLocatorActivated){
 				if( new Date().getTime() < this.currentCommand.implicitElementWait_EndTime){
 					editor.implicitwait.EnableLog = false;
-					return window.setTimeout(fnBind(this.resume, this), 20);
+					return window.setTimeout( function(){return self.resume.apply(self);}, 20);
 				}else{
 					e = SeleniumError( "Implicit wait timeout reached. " + e.message );
 				}
@@ -105,12 +105,11 @@ var Function_TestLoop_getImplicitWaitTimeoutTime = function(){
 ImplicitWait.prototype.ConditionAnObjectMethod = function(ClassObject, ClassMethod, ConditionClassObject, ConditionMethod) {
   if (ClassObject) {
 	var method_id = ClassMethod.toString() + ConditionMethod.toString();
-	var self = this;
-    if (!self[method_id]) {
-      self[method_id] = ClassObject[ClassMethod];
+    if (!ClassObject[method_id]) {
+      ClassObject[method_id] = ClassObject[ClassMethod];
       ClassObject[ClassMethod] = function() {
 		if(ConditionMethod.apply(ConditionClassObject)==true){
-			self[method_id].apply(this, arguments);
+			ClassObject[method_id].apply(this, arguments);
 		}
       }
 	  return true;
@@ -122,11 +121,10 @@ ImplicitWait.prototype.ConditionAnObjectMethod = function(ClassObject, ClassMeth
 ImplicitWait.prototype.HookAnObjectMethodAfter = function(ClassObject, ClassMethod, HookClassObject, HookMethod) {
   if (ClassObject) {
 	var method_id = ClassMethod.toString() + HookMethod.toString();
-	var self = this;
-    if (!self[method_id]) {
-      self[method_id] = ClassObject[ClassMethod];
-      ClassObject[ClassMethod] = function() {
-        var retValue = self[method_id].apply(this, arguments);
+    if (!ClassObject[method_id]) {
+	  ClassObject[method_id] = ClassObject[ClassMethod];
+	  ClassObject[ClassMethod] = function() {
+        var retValue = ClassObject[method_id].apply(this, arguments);
         return HookMethod.call(HookClassObject, this, retValue, arguments);
       }
 	  return true;
