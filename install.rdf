@@ -4,11 +4,12 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>implicit-wait@florent.breheret</em:id>
     <em:name>Selenium IDE: Implicit Wait</em:name>
-    <em:version>1.0.7</em:version>
+    <em:version>1.0.8</em:version>
     <em:creator>Florent Breheret</em:creator>
     <em:description>Implicit wait functions for Selenium IDE</em:description>
     <em:type>2</em:type>
 	<em:homepageURL>http://code.google.com/p/selenium-implicit-wait</em:homepageURL>
+    <em:updateURL>https://selenium-implicit-wait.googlecode.com/svn/trunk/update.rdf</em:updateURL>
 
 	<em:targetApplication>
 	  <Description>
