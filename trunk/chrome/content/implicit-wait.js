@@ -4,7 +4,7 @@ function ImplicitWait(editor) {
 	this.editor = editor;
 	this.IsImplicitWaitLocatorActivated = false;
 	this.IsImplicitWaitAjaxActivated = false;
-	this.Timeout=editor.getOptions().timeout;
+	this.Timeout=0;
 	this.EnableLog=true;
 	editor.app.addObserver({
 		testSuiteChanged: function(testSuite) {
@@ -16,6 +16,7 @@ function ImplicitWait(editor) {
 }
 
 ImplicitWait.prototype.InstallMethods = function() {
+	this.Timeout=this.editor.getOptions().timeout
 	this.editor.selDebugger.runner.IDETestLoop.prototype.resume = Function_Override_TestLoop_resume;
 	this.editor.selDebugger.runner.IDETestLoop.prototype.getImplicitWaitTimeoutTime = Function_TestLoop_getImplicitWaitTimeoutTime;
 	this.editor.selDebugger.runner.PageBot.prototype.findElement = Function_Override_BrowserBot_findElement;
