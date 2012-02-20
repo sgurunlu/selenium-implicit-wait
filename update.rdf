@@ -6,34 +6,22 @@
       <RDF:Seq>
         <!-- one li for each new release; newest first according to some sources -->
         <!-- to get updateHash using cygwin : sha1sum /cygdrive/c/implicit-wait-x.x.x.xpi  -->
+		
         <RDF:li>
           <RDF:Description>
-            <em:version>1.0.6</em:version>
+            <em:version>1.0.7</em:version>
             <em:targetApplication>
               <RDF:Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.6.0</em:minVersion> 
                 <em:maxVersion>10.*</em:maxVersion>
-                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait_1.0.6.xpi</em:updateLink>
-                <em:updateHash>sha1:e130d73624ee9802e96d82b4d4d5c938e1dfcd6b</em:updateHash>
+                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait-1.0.7.xpi</em:updateLink>
+                <em:updateHash>sha1:287c594920b9e7bfbefcf0dfeac406f92dfc7b41</em:updateHash>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
         </RDF:li>
-        <RDF:li>
-          <RDF:Description>
-            <em:version>1.0.4</em:version>
-            <em:targetApplication>
-              <RDF:Description>
-                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-                <em:minVersion>3.6.0</em:minVersion> 
-                <em:maxVersion>10.*</em:maxVersion>
-                <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/implicit-wait_1.0.4.xpi</em:updateLink>
-                <em:updateHash>sha1:593f0d74a8234da0cf4baec940aa538c52b280f2</em:updateHash>
-              </RDF:Description>
-            </em:targetApplication>
-          </RDF:Description>
-        </RDF:li>
+		
       </RDF:Seq>
     </em:updates>
   </RDF:Description>
