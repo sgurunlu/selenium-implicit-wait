@@ -1,28 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <apidoc>
 
-<function name="setImplicitWaitTimeOut">
-	<param name="timeout_ms">a timeout in milliseconds.</param>
-	<comment>
-		<p>Set the TIMEOUT value used by ImplicitWaitLocator and ImplicitWaitCondition. Default is 30000 millisecond.</p>
-		<p>Exemple : setImplicitWaitTimeOut | 10000</p>
-	</comment>
-</function>
-
 <function name="setImplicitWaitLocator">
-	<param name="scope">'testcase' for this testcase only, 'testsuite' for all testcases and 'null' to remove the condition</param>
+	<param name="timeout">Timeout in millisecond, set 0 to disable the implicit wait</param>
 	<comment>
 		<p>Activate an implicite wait on action commands when trying to find elements.</p>
-		<p>Exemple : setImplicitWaitLocator | testcase</p>
+		<p>Exemple : setImplicitWaitLocator | 5000</p>
 	</comment>
 </function>
 
 <function name="setImplicitWaitCondition">
-	<param name="scope">'testcase' for this testcase only, 'testsuite' for all testcases and 'null' to remove the condition</param>
+	<param name="timeout">Timeout in millisecond, set 0 to disable the implicit wait</param>
 	<param name="condition_js">a javascript logical expression that need to be true to execute each command.</param>
 	<comment>
 		<p>Activate an implicite wait for a condition before commands are executed.</p>
-		<p>Exemple : setImplicitWaitCondition | testcase  | 1==1  </p>
+		<p>Exemple : setImplicitWaitCondition | 5000  | 1==1  </p>
 		Conditions with known Ajax libraries :
 		<ul>
 		<li><code>(typeof window.Sys=='undefined')? true : window.Sys.WebForms.PageRequestManager.getInstance().get_isInAsyncPostBack()==false;</code></li>

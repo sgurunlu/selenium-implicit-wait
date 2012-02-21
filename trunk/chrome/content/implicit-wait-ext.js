@@ -4,17 +4,18 @@
 /**
  * @Author : Florent BREHERET
  * @Function : Activate an implicite wait on action commands when trying to find elements.
+ * @Param timeout : Timeout in millisecond, set 0 to disable the implicit wait
  * @Exemple 1 : setImplicitWaitLocator | 0
  * @Exemple 1 : setImplicitWaitLocator | 1000
  */
 Selenium.prototype.doSetImplicitWaitLocator = function(timeout){
 	if( !editor.implicitwait ) throw new SeleniumError("setImplicitWaitLocator works on Selenium IDE only ! ");
 	if( timeout==0 ) {
-		editor.implicitwait.Timeout=0;
-		editor.implicitwait.IsImplicitWaitLocatorActivated=false;
+		editor.implicitwait.timeoutms=0;
+		editor.implicitwait.isImplicitWaitLocatorActivated=false;
 	}else{
-		editor.implicitwait.Timeout=timeout;
-		editor.implicitwait.IsImplicitWaitLocatorActivated=true;
+		editor.implicitwait.timeoutms=timeout;
+		editor.implicitwait.isImplicitWaitLocatorActivated=true;
 	}
 };
 /**
@@ -22,7 +23,7 @@ Selenium.prototype.doSetImplicitWaitLocator = function(timeout){
  
  * @author : Florent BREHERET
  * @Function : Activate an implicite wait for condition before commands are executed.
- * @Param scope : <testcase> for this testcase only, <testsuite> for all testcases and <null> to remove the condition
+ * @Param timeout : Timeout in millisecond, set 0 to disable the implicit wait
  * @Param condition_js : Javascript logical expression that need to be true to execute each command.
  *
  * @Exemple 0 : setImplicitWaitCondition |  0  |  
@@ -35,12 +36,12 @@ Selenium.prototype.doSetImplicitWaitLocator = function(timeout){
 Selenium.prototype.doSetImplicitWaitCondition = function( timeout, condition_js ) {
 	if( !editor.implicitwait ) throw new SeleniumError("setImplicitWaitCondition works on Selenium IDE only ! ");
 	if( timeout==0 ) {
-		editor.implicitwait.Timeout=0;
+		editor.implicitwait.timeoutms=0;
 		editor.implicitwait.implicitAjaxWait_Condition=null;
-		editor.implicitwait.IsImplicitWaitAjaxActivated=false;
+		editor.implicitwait.isImplicitWaitAjaxActivated=false;
 	}else{
-		editor.implicitwait.Timeout=timeout;
+		editor.implicitwait.timeoutms=timeout;
 		editor.implicitwait.implicitAjaxWait_Condition=condition_js;
-		editor.implicitwait.IsImplicitWaitAjaxActivated=true;
+		editor.implicitwait.isImplicitWaitAjaxActivated=true;
 	}
 }

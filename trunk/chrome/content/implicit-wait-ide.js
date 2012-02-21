@@ -2,47 +2,47 @@
 function ImplicitWait(editor) {
 	var self=this;
 	this.editor = editor;
-	this.HouglassButtonChecked = false;
-	this.IsImplicitWaitLocatorActivated = false;
-	this.IsImplicitWaitAjaxActivated = false;
+	this.buttonHouglassChecked = false;
+	this.isImplicitWaitLocatorActivated = false;
+	this.isImplicitWaitAjaxActivated = false;
 	this.implicitAjaxWait_Condition=null;
-	this.Timeout=0;
-	this.EnableLog=true;
+	this.timeoutms=0;
+	this.isLogEnabled=true;
 	editor.app.addObserver({
 		testSuiteChanged: function(testSuite) {
 			if (!self.editor.selDebugger.isHooked) {
-				self.editor.selDebugger.isHooked = self.HookAnObjectMethodAfter(self.editor.selDebugger, 'init', self, self.InstallMethods);
+				self.editor.selDebugger.isHooked = self.HookAnObjectMethodAfter(self.editor.selDebugger, 'init', self, self.editor_selDebugger_init_hooked);
 			}
 		}
 	});
-	self.HookAnObjectMethodBefore(Editor.controller, 'doCommand', self, self.Editor_doCommand_hooked);
+	self.HookAnObjectMethodBefore(Editor.controller, 'doCommand', self, self.Editor_controller_doCommand_hooked);
 }
 
-ImplicitWait.prototype.Editor_doCommand_hooked = function( object, arguments ) {
+ImplicitWait.prototype.Editor_controller_doCommand_hooked = function( object, arguments ) {
 	switch (arguments[0]) {
 		case "cmd_selenium_play":
 		case "cmd_selenium_play_suite":
 		case "cmd_selenium_reload":
-			this.Timeout=this.editor.getOptions().timeout;
-			this.IsImplicitWaitLocatorActivated = this.HouglassButtonChecked;
-			this.IsImplicitWaitAjaxActivated = false;
+			this.timeoutms=this.editor.getOptions().timeout;
+			this.isImplicitWaitLocatorActivated = this.buttonHouglassChecked;
+			this.isImplicitWaitAjaxActivated = false;
 		break;
 	}
 	return true;
 };
 
-ImplicitWait.prototype.InstallMethods = function( object, arguments, retvalue  ) {
+ImplicitWait.prototype.editor_selDebugger_init_hooked = function( object, arguments, retvalue  ) {
 	object.runner.LOG.debug('Implicit wait installation');
 	object.runner.IDETestLoop.prototype.resume = Function_Override_TestLoop_resume;
 	object.runner.IDETestLoop.prototype.getImplicitWaitTimeoutTime = Function_TestLoop_getImplicitWaitTimeoutTime;
 	object.runner.PageBot.prototype.findElement = Function_Override_BrowserBot_findElement;
-	this.HookAnObjectMethodBefore(object.runner.LOG, 'log', this, function(){return this.EnableLog} );
+	this.HookAnObjectMethodBefore(object.runner.LOG, 'log', this, function(){return this.isLogEnabled} );
 };
 
 ImplicitWait.prototype.toggleImplicitWaitButton = function(button) {
 	button.checked = !button.checked;
-	this.HouglassButtonChecked = button.checked;
-	this.IsImplicitWaitLocatorActivated = this.HouglassButtonChecked;
+	this.buttonHouglassChecked = button.checked;
+	this.isImplicitWaitLocatorActivated = this.buttonHouglassChecked;
 };
 
 var Function_Override_BrowserBot_findElement = function (locator, win){
@@ -63,13 +63,13 @@ var Function_Override_TestLoop_resume = function() {
 		if(editor.selDebugger.state == Debugger.PAUSE_REQUESTED){
 			return this.continueTestAtCurrentCommand();
 		}
-		if (editor.implicitwait.IsImplicitWaitAjaxActivated && !this.currentCommand.implicitElementWait_EndTime) {
+		if (editor.implicitwait.isImplicitWaitAjaxActivated && !this.currentCommand.implicitElementWait_EndTime) {
 			if( !this.currentCommand.implicitAjaxWait_EndTime ){
 					this.currentCommand.implicitAjaxWait_EndTime = this.getImplicitWaitTimeoutTime();
 					return window.setTimeout( function(){return self.resume.apply(self);}, 3);
 			}
 			if (new Date().getTime() > this.currentCommand.implicitAjaxWait_EndTime) {
-				throw new SeleniumError("Implicit wait Timeout reached while waiting for condition \"" + editor.implicitwait.implicitAjaxWait_Condition  + "\"");
+				throw new SeleniumError("Implicit wait timeoutms reached while waiting for condition \"" + editor.implicitwait.implicitAjaxWait_Condition  + "\"");
 			}else{
 				try{
 					ret=eval(editor.implicitwait.implicitAjaxWait_Condition);
@@ -80,7 +80,7 @@ var Function_Override_TestLoop_resume = function() {
 				if(!ret) return window.setTimeout( function(){return self.resume.apply(self);}, 20);
 			}
 		}
-		if(editor.implicitwait.IsImplicitWaitLocatorActivated){
+		if(editor.implicitwait.isImplicitWaitLocatorActivated){
 			if(this.currentCommand.implicitElementWait_EndTime == undefined){
 				this.currentCommand.implicitElementWait_EndTime = this.getImplicitWaitTimeoutTime();
 			}
@@ -90,29 +90,29 @@ var Function_Override_TestLoop_resume = function() {
 		this.continueTestWhenConditionIsTrue();
 	} catch (e) {
 		if(e.isFindElementError){
-			if(editor.implicitwait.IsImplicitWaitLocatorActivated){
+			if(editor.implicitwait.isImplicitWaitLocatorActivated){
 				if( new Date().getTime() < this.currentCommand.implicitElementWait_EndTime){
-					editor.implicitwait.EnableLog = false;
+					editor.implicitwait.isLogEnabled = false;
 					return window.setTimeout( function(){return self.resume.apply(self);}, 20);
 				}else{
-					e = SeleniumError( "Implicit wait timeout reached. " + e.message );
+					e = SeleniumError( "Implicit wait timeoutms reached. " + e.message );
 				}
 			}else{
 				e = SeleniumError( e.message );
 			}
 		}
-		editor.implicitwait.EnableLog = true;
+		editor.implicitwait.isLogEnabled = true;
 		if(!this._handleCommandError(e)){
 			this.testComplete();
 		}else {
 			this.continueTest();
 		}
 	}
-	editor.implicitwait.EnableLog = true;
+	editor.implicitwait.isLogEnabled = true;
 };
 
 var Function_TestLoop_getImplicitWaitTimeoutTime = function(){
-	var endtime=new Date().getTime() + parseInt(editor.implicitwait.Timeout * 0.8);
+	var endtime=new Date().getTime() + parseInt(editor.implicitwait.timeoutms * 0.8);
 	return endtime;
 };
 
