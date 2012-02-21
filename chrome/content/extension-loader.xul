@@ -6,6 +6,7 @@
 	<html:script type="application/x-javascript">
         var ide_api = new API();
 		ide_api.addPlugin("implicit-wait@florent.breheret");
-		ide_api.addPluginProvidedIdeExtension("chrome://implicit-wait/content/implicit-wait.js");
+		ide_api.addPluginProvidedIdeExtension("chrome://implicit-wait/content/implicit-wait-ide.js");
+		ide_api.addPluginProvidedUserExtension("chrome://implicit-wait/content/implicit-wait-ext.js", "chrome://implicit-wait/content/implicit-wait-ide.xml");
     </html:script>
 </overlay>
