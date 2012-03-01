@@ -1,35 +1,21 @@
 @echo off
 
-setlocal
+REM Debuger : Firebug + chromebug
 
-set Path=C:\WINDOWS;C:\WINDOWS\system32;C:\Progra~1\7-Zip;C:\Progra~1\Windows Resource Kits\Tools;C:\cygwin\bin
-set APP_NAME="implicit-wait"
-set CHROME_PROVIDERS="content"
+set Path=C:\WINDOWS;C:\WINDOWS\system32;C:\Progra~1\7-Zip
+set APP_NAME="implicit-wait-1.0.9.xpi"
 
-set ROOT_DIR=%CD%
-set TMP_DIR="build"
+REM controle de la presence des repertoires et fichiers
+for /f "usebackq tokens=1,2 delims==" %%a in (`SET ^| find "_dir=" `) do IF NOT EXIST %%b echo Directory not found : %%a=%%b &pause&exit
+for /f "usebackq tokens=1,2 delims==" %%a in (`SET ^| find "_path=" `) do IF NOT EXIST %%b echo File not found : %%a=%%b &pause&exit
+for %%a in ("%PATH:;=";"%") DO IF NOT EXIST %%a echo Directory not found in PATH : %%a &pause&exit
 
-rem remove any left-over files from previous build
-del /Q %APP_NAME%.xpi
-del /S /Q %TMP_DIR%
+echo "Generating %APP_NAME%..."
 
-robocopy chrome %TMP_DIR%\chrome /E
-copy install.rdf %TMP_DIR%
-copy chrome.manifest %TMP_DIR%
+IF EXIST %APP_NAME%*  Del /Q %APP_NAME%*
+	
+7z a %APP_NAME% -r -tzip chrome\*.* chrome.manifest install.rdf
 
-rem generate the XPI file
-cd %TMP_DIR%
-echo "Generating %APP_NAME%.xpi..."
-
-7z a -r -y -tzip ../%APP_NAME%.zip *
-
-cd %ROOT_DIR%
-rename %APP_NAME%.zip %APP_NAME%.xpi
-
-echo "Generating sha1 hashcode : "
-del /Q hash.txt
-sha1sum %APP_NAME%.xpi>hash.txt
-
-endlocal
 
 pause
+exit
