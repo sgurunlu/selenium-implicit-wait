@@ -6,6 +6,7 @@ function ImplicitWait(editor) {
 	this.isImplicitWaitLocatorActivated = false;
 	this.isImplicitWaitAjaxActivated = false;
 	this.implicitAjaxWait_Condition=null;
+	this.implicitAjaxWait_Function=function(){ return true;};
 	this.timeoutms=0;
 	this.isLogEnabled=true;
 	editor.app.addObserver({
@@ -69,10 +70,11 @@ var Function_Override_TestLoop_resume = function() {
 					return window.setTimeout( function(){return self.resume.apply(self);}, 3);
 			}
 			if (new Date().getTime() > this.currentCommand.implicitAjaxWait_EndTime) {
-				throw new SeleniumError("Implicit wait timeoutms reached while waiting for condition \"" + editor.implicitwait.implicitAjaxWait_Condition  + "\"");
+				throw new SeleniumError("Implicit wait timeout reached while waiting for condition \"" + editor.implicitwait.implicitAjaxWait_Condition  + "\"");
 			}else{
 				try{
-					ret=eval(editor.implicitwait.implicitAjaxWait_Condition);
+					ret = editor.implicitwait.implicitAjaxWait_Function.call(editor.selDebugger.runner.selenium);
+					//ret=eval(editor.implicitwait.implicitAjaxWait_Condition);
 					//ret=(function(condition){return eval(condition);}).call(editor.selDebugger.runner.selenium, editor.implicitwait.implicitAjaxWait_Condition)
 				} catch (e) {
 					throw new SeleniumError("ImplicitWaitCondition failed : " + e.message );
@@ -95,7 +97,7 @@ var Function_Override_TestLoop_resume = function() {
 					editor.implicitwait.isLogEnabled = false;
 					return window.setTimeout( function(){return self.resume.apply(self);}, 20);
 				}else{
-					e = SeleniumError( "Implicit wait timeoutms reached. " + e.message );
+					e = SeleniumError( "Implicit wait timeout reached. " + e.message );
 				}
 			}else{
 				e = SeleniumError( e.message );
