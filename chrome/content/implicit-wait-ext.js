@@ -38,10 +38,12 @@ Selenium.prototype.doSetImplicitWaitCondition = function( timeout, condition_js 
 	if( timeout==0 ) {
 		editor.implicitwait.timeoutms=0;
 		editor.implicitwait.implicitAjaxWait_Condition=null;
+		editor.implicitwait.implicitAjaxWait_Function=function(){return true;};
 		editor.implicitwait.isImplicitWaitAjaxActivated=false;
 	}else{
 		editor.implicitwait.timeoutms=timeout;
 		editor.implicitwait.implicitAjaxWait_Condition=condition_js;
+		selenium.getEval('editor.implicitwait.implicitAjaxWait_Function=function(){ return eval("' + condition_js + '");};');
 		editor.implicitwait.isImplicitWaitAjaxActivated=true;
 	}
 }
