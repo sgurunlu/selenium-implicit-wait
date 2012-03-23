@@ -12,7 +12,7 @@
               <RDF:Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.6.0</em:minVersion>
-                <em:maxVersion>10.*</em:maxVersion>
+                <em:maxVersion>11.*</em:maxVersion>
                 <em:updateLink>http://selenium-implicit-wait.googlecode.com/files/SeleniumImplicitWait-1.0.9.xpi</em:updateLink>
                 <em:updateHash>sha1:f4a85d9cc0d72f160e50a0b6c6b1cfb41c7bb594</em:updateHash>
               </RDF:Description>
