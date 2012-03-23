@@ -13,6 +13,7 @@ $Project_dir = (get-item $Setup_dir).parent.fullname + "\"
 $VersionFile_path = $Sources_dir + "install.rdf"
 
 set-alias cmd-7zip "C:\Program Files\7-Zip\7z.exe"
+set-alias cmd-firefox "C:\Program Files\Mozilla Firefox\firefox.exe"
 
 function getVersion($version){
     $new_version =""
@@ -88,18 +89,18 @@ write-host " 0-Edit the version number :"
 write-host " 1-Create package :"
 	$ZipInclude_list= @("chrome\*.*","chrome.manifest","install.rdf")
 	$ZipExclude_list= @()
-	$OutputZip = $Project_name + "-" + $f_get_version + ".xpi"
-    write-host "   ** Create the package $OutputZip ..."
-    	if(test-path($OutputZip)){ Remove-Item $OutputZip; }
-    	cmd-7zip a $OutputZip  -tzip -r ($ZipInclude_list|ForEach{$_}) ($ZipExclude_list|ForEach{"-x!"+$_}) |  out-Null
+	$OutputXpi = $Project_name + "-" + $f_get_version + ".xpi"
+    write-host "   ** Create the package $OutputXpi ..."
+    	if(test-path($OutputXpi)){ Remove-Item $OutputXpi; }
+    	cmd-7zip a $OutputXpi  -tzip -r ($ZipInclude_list|ForEach{$_}) ($ZipExclude_list|ForEach{"-x!"+$_}) |  out-Null
         if($LASTEXITCODE -eq 1) { write-host("  Package creation failed ! ") -ForegroundColor red; break; }
         
     write-host ""
 
 write-host " 2-Edit update.rdf :"
-	write-host "   ** Calculate the sha1 of $OutputZip..."
-    [String]$updateHash = "sha1:" + ( getSha1($OutputZip) )
-    [String]$updateLink = "http://selenium-implicit-wait.googlecode.com/files/" + $OutputZip
+	write-host "   ** Calculate the sha1 of $OutputXpi..."
+    [String]$updateHash = "sha1:" + ( getSha1($OutputXpi) )
+    [String]$updateLink = "http://selenium-implicit-wait.googlecode.com/files/" + $OutputXpi
     [XML]$xmlDoc = [XML](gc "update.rdf")
 	$firstchild = $xmlDoc.RDF.Description.updates.Seq.li | Select-Object -first 1
     if($firstchild.Description.version -ne $f_get_version){
@@ -115,6 +116,20 @@ write-host " 2-Edit update.rdf :"
     $xmldoc.save("update.rdf")
     
     write-host ""
+ 
+write-host " 2-Package user-extensions :"
+	write-host "   ** Create zip file for user-extensions.js ..."
+	$OutputExtZip = $Project_name + "-user-extensions-" + $f_get_version + ".zip"
+	$ZipInclude_list= @("user-extensions.js")
+	$ZipExclude_list= @()
+    cmd-7zip a $OutputExtZip  -tzip -r ($ZipInclude_list|ForEach{$_}) ($ZipExclude_list|ForEach{"-x!"+$_}) |  out-Null
+    if($LASTEXITCODE -eq 1) { write-host("  Package creation for user-extension failed ! ") -ForegroundColor red; break; }
     
+    write-host ""
+ 	
+write-host " 2-Install in firefox :"
+	write-host "   ** Launching Firefox for installation..."
+	cmd-firefox $OutputXpi
+ 
 $input = read-host "   Press enter to quit "
 exit
