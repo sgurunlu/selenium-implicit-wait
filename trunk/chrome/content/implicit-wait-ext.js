@@ -1,6 +1,4 @@
 
-
-
 /**
  * @Author : Florent BREHERET
  * @Function : Activate an implicite wait on action commands when trying to find elements.
@@ -11,10 +9,10 @@
 Selenium.prototype.doSetImplicitWaitLocator = function(timeout){
 	if( !editor.implicitwait ) throw new SeleniumError("setImplicitWaitLocator works on Selenium IDE only ! ");
 	if( timeout==0 ) {
-		editor.implicitwait.timeoutms=0;
+		editor.implicitwait.locatorTimeout=0;
 		editor.implicitwait.isImplicitWaitLocatorActivated=false;
 	}else{
-		editor.implicitwait.timeoutms=timeout;
+		editor.implicitwait.locatorTimeout=parseInt(timeout);
 		editor.implicitwait.isImplicitWaitLocatorActivated=true;
 	}
 };
@@ -36,12 +34,12 @@ Selenium.prototype.doSetImplicitWaitLocator = function(timeout){
 Selenium.prototype.doSetImplicitWaitCondition = function( timeout, condition_js ) {
 	if( !editor.implicitwait ) throw new SeleniumError("setImplicitWaitCondition works on Selenium IDE only ! ");
 	if( timeout==0 ) {
-		editor.implicitwait.timeoutms=0;
+		editor.implicitwait.conditionTimeout=0;
 		editor.implicitwait.implicitAjaxWait_Condition=null;
 		editor.implicitwait.implicitAjaxWait_Function=function(){return true;};
 		editor.implicitwait.isImplicitWaitAjaxActivated=false;
 	}else{
-		editor.implicitwait.timeoutms=timeout;
+		editor.implicitwait.conditionTimeout=parseInt(timeout);
 		editor.implicitwait.implicitAjaxWait_Condition=condition_js;
 		selenium.getEval('editor.implicitwait.implicitAjaxWait_Function=function(){ return eval("' + condition_js + '");};');
 		editor.implicitwait.isImplicitWaitAjaxActivated=true;

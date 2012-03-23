@@ -1,4 +1,19 @@
-
+/*
+ * Copyright 2012 Florent Breheret
+ * http://code.google.com/p/selenium-implicit-wait/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 function ImplicitWait(editor) {
 	var self=this;
 	this.editor = editor;
@@ -7,7 +22,8 @@ function ImplicitWait(editor) {
 	this.isImplicitWaitAjaxActivated = false;
 	this.implicitAjaxWait_Condition=null;
 	this.implicitAjaxWait_Function=function(){ return true;};
-	this.timeoutms=0;
+	this.locatorTimeout=0;
+	this.conditionTimeout=0;
 	this.isLogEnabled=true;
 	editor.app.addObserver({
 		testSuiteChanged: function(testSuite) {
@@ -24,7 +40,7 @@ ImplicitWait.prototype.Editor_controller_doCommand_hooked = function( object, ar
 		case "cmd_selenium_play":
 		case "cmd_selenium_play_suite":
 		case "cmd_selenium_reload":
-			this.timeoutms=this.editor.getOptions().timeout;
+			this.locatorTimeout=this.editor.getOptions().timeout;
 			this.isImplicitWaitLocatorActivated = this.buttonHouglassChecked;
 			this.isImplicitWaitAjaxActivated = false;
 		break;
@@ -35,7 +51,6 @@ ImplicitWait.prototype.Editor_controller_doCommand_hooked = function( object, ar
 ImplicitWait.prototype.editor_selDebugger_init_hooked = function( object, arguments, retvalue  ) {
 	object.runner.LOG.debug('Implicit wait installation');
 	object.runner.IDETestLoop.prototype.resume = Function_Override_TestLoop_resume;
-	object.runner.IDETestLoop.prototype.getImplicitWaitTimeoutTime = Function_TestLoop_getImplicitWaitTimeoutTime;
 	object.runner.PageBot.prototype.findElement = Function_Override_BrowserBot_findElement;
 	this.HookAnObjectMethodBefore(object.runner.LOG, 'log', this, function(){return this.isLogEnabled} );
 };
@@ -66,7 +81,7 @@ var Function_Override_TestLoop_resume = function() {
 		}
 		if (editor.implicitwait.isImplicitWaitAjaxActivated && !this.currentCommand.implicitElementWait_EndTime) {
 			if( !this.currentCommand.implicitAjaxWait_EndTime ){
-					this.currentCommand.implicitAjaxWait_EndTime = this.getImplicitWaitTimeoutTime();
+					this.currentCommand.implicitAjaxWait_EndTime = ( new Date().getTime() + parseInt(editor.implicitwait.conditionTimeout * 0.8) ) ;
 					return window.setTimeout( function(){return self.resume.apply(self);}, 3);
 			}
 			if (new Date().getTime() > this.currentCommand.implicitAjaxWait_EndTime) {
@@ -83,8 +98,8 @@ var Function_Override_TestLoop_resume = function() {
 			}
 		}
 		if(editor.implicitwait.isImplicitWaitLocatorActivated){
-			if(this.currentCommand.implicitElementWait_EndTime == undefined){
-				this.currentCommand.implicitElementWait_EndTime = this.getImplicitWaitTimeoutTime();
+			if(!this.currentCommand.implicitElementWait_EndTime){
+				this.currentCommand.implicitElementWait_EndTime = ( new Date().getTime() + parseInt(editor.implicitwait.locatorTimeout * 0.8) ) ;
 			}
 		}
 		editor.selDebugger.runner.selenium.browserbot.runScheduledPollers();
@@ -111,11 +126,6 @@ var Function_Override_TestLoop_resume = function() {
 		}
 	}
 	editor.implicitwait.isLogEnabled = true;
-};
-
-var Function_TestLoop_getImplicitWaitTimeoutTime = function(){
-	var endtime=new Date().getTime() + parseInt(editor.implicitwait.timeoutms * 0.8);
-	return endtime;
 };
 
 ImplicitWait.prototype.HookAnObjectMethodBefore = function(ClassObject, ClassMethod, HookClassObject, HookMethod) {
