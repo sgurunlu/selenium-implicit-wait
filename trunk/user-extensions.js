@@ -61,26 +61,30 @@ MozillaBrowserBot.prototype.findElement = function (locator, win){
 	}
 	return core.firefox.unwrap(element);
 };
+
 KonquerorBrowserBot.prototype.findElement = MozillaBrowserBot.prototype.findElement;
 SafariBrowserBot.prototype.findElement = MozillaBrowserBot.prototype.findElement;
 OperaBrowserBot.prototype.findElement = MozillaBrowserBot.prototype.findElement;
 IEBrowserBot.prototype.findElement = MozillaBrowserBot.prototype.findElement;
 
-HtmlRunnerTestLoop.prototype.resume=function() {
+ImplicitWait.resume_overrided = function() {
 	try {
 		var self=this;
 		if(this.abord) return;
-		if(htmlTestRunner.controlPanel.runInterval == -1){
-			return this.continueTestAtCurrentCommand();
+		if( !typeof htmlTestRunner === 'undefined'){
+			if(htmlTestRunner.controlPanel.runInterval == -1){
+				return this.continueTestAtCurrentCommand();
+			}
 		}
 		if (implicitwait.isImplicitWaitAjaxActivated && !this.currentCommand.implicitElementWait_EndTime) {
 			if( !this.currentCommand.implicitAjaxWait_EndTime ){
-					this.currentCommand.implicitAjaxWait_EndTime = (new Date().getTime() + parseInt(implicitwait.conditionTimeout * 0.8));
-					return window.setTimeout( function(){return self.resume.apply(self);}, 3);
+				this.currentCommand.implicitAjaxWait_EndTime = (new Date().getTime() + parseInt(implicitwait.conditionTimeout * 0.8));
+				return window.setTimeout( function(){return self.resume.apply(self);}, 3);
 			}
 			if (new Date().getTime() > this.currentCommand.implicitAjaxWait_EndTime) {
 				throw new SeleniumError("Implicit wait timeout reached while waiting for condition \"" + implicitwait.implicitAjaxWait_Condition  + "\"");
 			}else{
+				var ret;
 				try{
 					ret=eval(implicitwait.implicitAjaxWait_Condition);
 					//ret = implicitwait.implicitAjaxWait_Function.call(htmlTestRunner.selDebugger.runner.selenium);
@@ -122,25 +126,31 @@ HtmlRunnerTestLoop.prototype.resume=function() {
 	implicitwait.isLogEnabled = true;
 };
 
-var HookAnObjectMethodBefore = function(ClassObject, ClassMethod, HookClassObject, HookMethod) {
-  if (ClassObject) {
-	var method_id = ClassMethod.toString() + HookMethod.toString();
-    if (!ClassObject[method_id]) {
-	  ClassObject[method_id] = ClassObject[ClassMethod];
-	  ClassObject[ClassMethod] = function() {
-		if( HookMethod.call(HookClassObject, ClassObject, arguments )==true ){
-			return ClassObject[method_id].apply(ClassObject, arguments);
+ImplicitWait.HookAnObjectMethodBefore = function(ClassObject, ClassMethod, HookClassObject, HookMethod) {
+	if (ClassObject) {
+		var method_id = ClassMethod.toString() + HookMethod.toString();
+		if (!ClassObject[method_id]) {
+			ClassObject[method_id] = ClassObject[ClassMethod];
+			ClassObject[ClassMethod] = function() {
+				if( HookMethod.call(HookClassObject, ClassObject, arguments )==true ){
+					return ClassObject[method_id].apply(ClassObject, arguments);
+				}
+			}
+			return true;
 		}
-      }
-	  return true;
-    }
-  }
-  return false;
+	}
+	return false;
 };
 
 try {
 	var implicitwait = new ImplicitWait();
-	HookAnObjectMethodBefore(LOG, 'log', implicitwait, function(){return implicitwait.isLogEnabled} );
+	ImplicitWait.HookAnObjectMethodBefore(LOG, 'log', implicitwait, function(){return implicitwait.isLogEnabled} );
+	if( typeof RemoteRunner == 'function'){
+		RemoteRunner.prototype.resume = ImplicitWait.resume_overrided;
+	}
+	if( typeof HtmlRunnerTestLoop == 'function'){
+		HtmlRunnerTestLoop.prototype.resume = ImplicitWait.resume_overrided;
+	}
 } catch (error) {
 	alert('Error in ImplicitWait: ' + error);
 }
