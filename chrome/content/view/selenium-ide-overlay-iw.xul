@@ -11,6 +11,6 @@
 
 <overlay id="implicit-wait_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <toolbar id="toolbar2">
-		<toolbarbutton id="implicitwait-button" insertbefore="play-suite-button" class="icon" tooltiptext="&toolbar.implicitwait.tooltip;" oncommand="window.editor.implicitwait.toggleImplicitWaitButton(this)"/>
+		<toolbarbutton id="implicitwait-button" insertbefore="play-suite-button" class="icon" tooltiptext="&toolbar.implicitwait.tooltip;" oncommand="window.editor.implicitwait.toggleButton(this)"/>
 	</toolbar>
 </overlay>
