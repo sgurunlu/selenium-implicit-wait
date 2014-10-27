@@ -8,21 +8,13 @@
     <em:description>Implicit wait functions for Selenium IDE</em:description>
     <em:type>2</em:type>
     <em:homepageURL>http://code.google.com/p/selenium-implicit-wait</em:homepageURL>
-    <em:updateURL>https://selenium-implicit-wait.googlecode.com/svn/trunk/update.rdf</em:updateURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <!-- firefox -->
         <em:minVersion>3.0</em:minVersion>
-        <em:maxVersion>*</em:maxVersion>
+        <em:maxVersion>35.0</em:maxVersion>
       </Description>
     </em:targetApplication>
-    <em:requires>
-      <Description>
-        <em:id>{a6fd85ed-e919-4a43-a5af-8da18bda539f}</em:id>
-        <em:minVersion>1.1.0</em:minVersion>
-        <em:maxVersion>*</em:maxVersion>
-      </Description>
-    </em:requires>
   </Description>
 </RDF>
