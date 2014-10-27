@@ -16,15 +16,6 @@
 
 (function(){
 
-var DEFAULT_TIMEOUT = 5000;
-
-MozillaBrowserBot.prototype.findElement = function (locator, win){
-    var element = base.findElementOrNull(locator, win);
-    if(element === null) 
-        throw new ElementNotFountError(locator);
-    return window.core.firefox.unwrap(element);
-};
-
 /**
  * Class: Adds the implicit wait feature to SeleniumIDE.
  * @param {Object} editor
@@ -38,6 +29,8 @@ function ImplicitWait(editor){
 }
 ImplicitWait.prototype = {
     
+    DEFAULT_TIMEOUT: 5000,
+    
     wait_forced: false,
     wait_timeout: 0,
     postcondition_timeout: 0,
@@ -47,7 +40,7 @@ ImplicitWait.prototype = {
     /** Callback for the click on the  hourglass button*/
     toggleButton: function(button) {
         if((this.wait_forced = (button.checked ^= true)))
-            this.wait_timeout = DEFAULT_TIMEOUT;
+            this.wait_timeout = this.DEFAULT_TIMEOUT;
         else
             this.wait_timeout = 0;
     },
@@ -71,19 +64,11 @@ ImplicitWait.prototype = {
     /** Overrides Debugger.init: function() in debugger.js line 23 */
     wrap_selDebugger_init: function(base, fn, args/*[]*/){
         fn.apply(base, args);   //calls the original method
-        base.runner.MozillaBrowserBot.prototype.findElement = this.new_PageBot_findElement;
+        base.runner.MozillaBrowserBot.prototype.findElement = BrowserBot_findElement;
         wrap(base.runner.IDETestLoop.prototype, 'resume', this, this.wrap_IDETestLoop_resume);
-        this.wait_timeout = (this.wait_forced && DEFAULT_TIMEOUT) || 0;
+        this.wait_timeout = (this.wait_forced && this.DEFAULT_TIMEOUT) || 0;
         this.postcondition_timeout = 0;
         this.postcondition_func = this.postcondition_run = null;
-    },
-    
-    /** New BrowserBot.prototype.findElement: function(locator, win) in selenium-browserbot.js line 1524 */
-    new_PageBot_findElement: function(locator, win) {
-        var element = this.findElementOrNull(locator, win);
-        if(element === null) 
-            throw new ElementNotFountError(locator);
-        return window.core.firefox.unwrap(element);
     },
     
     /** Overrides TestLoop.prototype.resume: function() in selenium-executionloop.js line 71 */
@@ -154,6 +139,19 @@ ImplicitWait.prototype = {
             }
         })();
     }
+};
+
+
+/** 
+ * Overriding for BrowserBot.prototype.findElement: function(locator, win) in selenium-browserbot.js line 1524
+ * @param {String} locator
+ * @param {Object} win
+ */
+var BrowserBot_findElement = function (locator, win){
+    var element = this.findElementOrNull(locator, win);
+    if(element === null)
+        throw new ElementNotFountError(locator);
+    return window.core.firefox.unwrap(element);
 };
 
 
