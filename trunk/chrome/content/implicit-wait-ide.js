@@ -64,7 +64,6 @@ ImplicitWait.prototype = {
     /** Overrides Debugger.init: function() in debugger.js line 23 */
     wrap_selDebugger_init: function(base, fn, args/*[]*/){
         fn.apply(base, args);   //calls the original method
-        base.runner.MozillaBrowserBot.prototype.findElement = BrowserBot_findElement;
         wrap(base.runner.IDETestLoop.prototype, 'resume', this, this.wrap_IDETestLoop_resume);
         this.wait_timeout = (this.wait_forced && this.DEFAULT_TIMEOUT) || 0;
         this.postcondition_timeout = 0;
@@ -101,6 +100,8 @@ ImplicitWait.prototype = {
             try{
                 base.result = handler.execute(selenium, command);
                 base.waitForCondition = base.result.terminationCondition;
+                if(base.result.failed && locator_endtime && new Date().getTime() < locator_endtime)
+                    return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
                 (function loopCommandCondition(){    //handles the andWait condition in replacement of continueTestWhenConditionIsTrue
                     try{
                         browserbot.runScheduledPollers();
@@ -130,7 +131,7 @@ ImplicitWait.prototype = {
                     }
                 })();
             }catch(e){
-                if(e.isElementNotFoundError && locator_endtime && new Date().getTime() < locator_endtime)
+                if(e.isSeleniumError && locator_endtime && new Date().getTime() < locator_endtime)
                     return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
                 if(base._handleCommandError(e))
                     base.continueTest();
@@ -140,35 +141,6 @@ ImplicitWait.prototype = {
         })();
     }
 };
-
-
-/** 
- * Overriding for BrowserBot.prototype.findElement: function(locator, win) in selenium-browserbot.js line 1524
- * @param {String} locator
- * @param {Object} win
- */
-var BrowserBot_findElement = function (locator, win){
-    var element = this.findElementOrNull(locator, win);
-    if(element === null)
-        throw new ElementNotFountError(locator);
-    return window.core.firefox.unwrap(element);
-};
-
-
-/**
- * Class: Error specific to findElement
- * @param {String} locator
- */
-function ElementNotFountError(locator) {
-    this.locator = locator;
-}
-ElementNotFountError.prototype = {
-    isSeleniumError: true,
-    isElementNotFoundError: true,
-    get message(){ return 'Element ' + this.locator + ' not found'; },
-    toString: function(){ return this.message; }
-};
-
 
 /**
  * Wraps a method call to a function on a specified context. Skips the wrapping if already done.
@@ -185,7 +157,6 @@ function wrap(obj, key, context, func){
         }).__wrap__ = {src:fn, tgt:func};
     }
 }
-
 
 //Instantiates the plug-in
 this.editor.implicitwait = new ImplicitWait(this.editor);
