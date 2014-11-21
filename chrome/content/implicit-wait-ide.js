@@ -23,7 +23,7 @@
 function ImplicitWait(editor){
     this.editor = editor;
     
-    setTimeout(function(){      //waits all the sub-scripts are loaded to wrap selDebugger.init 
+    setTimeout(function(){      //waits all the sub-scripts are loaded to wrap selDebugger.init
         wrap(editor.selDebugger, 'init', this, this.wrap_selDebugger_init);
     }.bind(this), 0);
 }
@@ -49,7 +49,7 @@ ImplicitWait.prototype = {
     setImplicitWait: function(timeout){
         this.wait_timeout = +timeout || 0;
     },
-        
+    
     /** Call from the setImplicitWaitCondition command*/
     setImplicitWaitCondition: function(timeout, condition_js){
         if((this.postcondition_timeout = +timeout || 0)){
@@ -63,8 +63,12 @@ ImplicitWait.prototype = {
     
     /** Overrides Debugger.init: function() in debugger.js line 23 */
     wrap_selDebugger_init: function(base, fn, args/*[]*/){
+        var override = !base.runner;
         fn.apply(base, args);   //calls the original method
-        wrap(base.runner.IDETestLoop.prototype, 'resume', this, this.wrap_IDETestLoop_resume);
+        if(override){
+            wrap(base.runner.IDETestLoop.prototype, 'resume', this, this.wrap_IDETestLoop_resume);
+            base.runner.MozillaBrowserBot.prototype.findElementOrNull = MozillaBrowserBot_findElementOrNull;
+        }
         this.wait_timeout = (this.wait_forced && this.DEFAULT_TIMEOUT) || 0;
         this.postcondition_timeout = 0;
         this.postcondition_func = this.postcondition_run = null;
@@ -94,13 +98,15 @@ ImplicitWait.prototype = {
         
         runner.updateStats(command.command);
         
+        browserbot.locator_cache = null;
         var locator_endtime = this.wait_timeout && new Date().getTime() + this.wait_timeout;
         var self = this;
         (function loopFindElement(){
+            browserbot.is_element_missing = false;
             try{
                 base.result = handler.execute(selenium, command);
                 base.waitForCondition = base.result.terminationCondition;
-                if(base.result.failed && locator_endtime && new Date().getTime() < locator_endtime)
+                if(base.result.failed && browserbot.is_element_missing && locator_endtime && new Date().getTime() < locator_endtime)    //handles verify and assert having a failing locator
                     return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
                 (function loopCommandCondition(){    //handles the andWait condition in replacement of continueTestWhenConditionIsTrue
                     try{
@@ -131,7 +137,7 @@ ImplicitWait.prototype = {
                     }
                 })();
             }catch(e){
-                if(e.isSeleniumError && locator_endtime && new Date().getTime() < locator_endtime)
+                if(browserbot.is_element_missing && locator_endtime && new Date().getTime() < locator_endtime)    //handles actions having a failing locator
                     return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
                 if(base._handleCommandError(e))
                     base.continueTest();
@@ -141,6 +147,32 @@ ImplicitWait.prototype = {
         })();
     }
 };
+
+/** 
+ * Overriding for BrowserBot.prototype.findElementOrNull: function(locator, win) in selenium-browserbot.js line 1507
+ * @param {String} locator
+ * @param {Object} win
+ */
+var MozillaBrowserBot_findElementOrNull = function(locator, win){
+    var loc = this.locator_cache || (this.locator_cache = parse_locator(locator));    //cache the parsing result of the locator. Clearing is done by resume.
+    if(!win)
+        win = this.getCurrentWindow();
+    
+    var element;
+    try{
+        element = this.findElementRecursive(loc.type, loc.string, win.document, win);
+    }catch(e){
+        if(e.isSeleniumError)
+            throw e;
+    }
+    
+    if(element){
+        element = core.firefox.unwrap(element);
+        return this.highlight(element);
+    }
+    this.is_element_missing = true; //Boolean used by "resume" to identify that the command failed to find an element
+    return null;
+}
 
 /**
  * Wraps a method call to a function on a specified context. Skips the wrapping if already done.
