@@ -52,19 +52,13 @@ def get_input(message):
 		return input(message)
 
 def get_new_version(version):
-	new_version = ''
-	matrix_add = {'s': [0,0,0], 'z':[0,0,1], 'y':[0,1,0], 'x':[1,0,0]}
-	matrix_mul = {'s': [1,1,1], 'z':[1,1,1], 'y':[1,1,0], 'x':[1,0,0]}
-	while new_version == '':
-		input = get_input('Digit to increment [x.y.z] or version [0.0.0] or skip [s] ? ').strip()
-		if re.match(r's|z|y|x', input) :
-			add = matrix_add[input]
-			mul = matrix_mul[input]
-			values = [int(d) for d in version.split('.')]
-			new_version = '.'.join( str( values[i] * mul[i] + add[i] ) for i in range(0,3))
-		elif re.match(r'\d+\.\d+\.\d+', input):
-			new_version = input
-	return new_version
+    while True:
+        input = get_input('Digit to increment [x.y.z] or version [0.0.0] or skip [s] ? ').strip()
+        if re.match(r's|x|y|z', input) :
+            idx = {'s':99, 'x':0, 'y':1, 'z':2 }[input]
+            return '.'.join( [str((int(v)+(i == idx))*(i <= idx)) for i, v in enumerate(version.split('.'))] )
+        elif re.match(r'\d+\.\d+\.\d+', input):
+            return input
 	
 class ZipFile(zipfile.ZipFile):
 
