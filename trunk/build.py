@@ -9,26 +9,26 @@ def main():
 	last_modified_time = get_file_datetime(_rdf_path)
 	current_version = find_in_file(_rdf_path, r'version>([.\d]+)<');
     
-	print('')
-	print('Project : ' + _projet_name)
-	print('Tasks   : Build and package')
-	print('Current Version  : ' + current_version)
-	print('Last compilation : ' + (last_modified_time.strftime('%Y-%m-%d %H:%M:%S') if last_modified_time else 'none'))
-	print('_______________________________________________________________________\n')
+	print ''
+	print 'Project : ' + _projet_name
+	print 'Tasks   : Build and package'
+	print 'Current Version  : ' + current_version
+	print 'Last compilation : ' + (last_modified_time.strftime('%Y-%m-%d %H:%M:%S') if last_modified_time else 'none')
+	print '_______________________________________________________________________\n'
     
 	new_version = get_new_version(current_version)
     
-	print('New version : ' + new_version + '\n')
-	print('** Update version number...')
+	print 'New version : ' + new_version + '\n'
+	print '** Update version number...'
 	replace_in_file(_rdf_path, r'(?<=version>)[.\d]+(?=<)', new_version)
     
-	print('** Build xpi ...')
+	print '** Build xpi ...'
 	with ZipFile('selenium-implicit-wait-' + new_version + '.xpi', 'w') as zip:
 		zip.add(r'chrome.manifest')
 		zip.add(r'install.rdf')
 		zip.add(r'chrome')
     
-	print('\n__________________________________________________________END OF SCRIPT')
+	print '\n__________________________________________________________END OF SCRIPT'
 	
 
 def get_file_datetime(filepath):
@@ -46,10 +46,8 @@ def replace_in_file(filepath, pattern, replacement):
 		f.write(re.sub(pattern, replacement, text))
 
 def get_input(message):
-    try:
-		return raw_input(message)
-    except NameError:
-		return input(message)
+    try: return raw_input(message)
+    except NameError: return input(message)
 
 def get_new_version(version):
     while True:
@@ -59,7 +57,7 @@ def get_new_version(version):
             return '.'.join( [str((int(v)+(i == idx))*(i <= idx)) for i, v in enumerate(version.split('.'))] )
         elif re.match(r'\d+\.\d+\.\d+', input):
             return input
-	
+
 class ZipFile(zipfile.ZipFile):
 
 	def __init__(self, file, mode):
@@ -71,6 +69,6 @@ class ZipFile(zipfile.ZipFile):
 				self.add(item + r'\*');
 			else:
 				self.write(item)
-				
+
 if __name__ == '__main__':
 	main()
