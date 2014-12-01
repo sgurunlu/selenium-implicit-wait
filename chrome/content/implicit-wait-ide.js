@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Florent Breheret
+ * Copyright 2014 Florent Breheret
  * http://code.google.com/p/selenium-implicit-wait/
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,183 +14,16 @@
  * limitations under the License.
  */
 
-(function(){
 
-/**
- * Class: Adds the implicit wait feature to SeleniumIDE.
- * @param {Object} editor
- */
-function ImplicitWait(editor){
-    this.editor = editor;
-    
-    setTimeout(function(){      //waits all the sub-scripts are loaded to wrap selDebugger.init
-        wrap(editor.selDebugger, 'init', this, this.wrap_selDebugger_init);
-    }.bind(this), 0);
-}
-ImplicitWait.prototype = {
-    
-    DEFAULT_TIMEOUT: 5000,
-    
-    wait_forced: false,
-    wait_timeout: 0,
-    postcondition_timeout: 0,
-    postcondition_func: null,
-    postcondition_run: null,
-    
-    /** Callback for the click on the  hourglass button*/
-    toggleButton: function(button) {
-        if((this.wait_forced = (button.checked ^= true)))
-            this.wait_timeout = this.DEFAULT_TIMEOUT;
-        else
-            this.wait_timeout = 0;
-    },
-    
-    /** Call from the setImplicitWait command*/
-    setImplicitWait: function(timeout){
-        this.wait_timeout = +timeout || 0;
-    },
-    
-    /** Call from the setImplicitWaitCondition command*/
-    setImplicitWaitCondition: function(timeout, condition_js){
-        if((this.postcondition_timeout = +timeout || 0)){
-            this.postcondition_func = new Function('return ' + condition_js);
-            this.postcondition_func.__string__ = condition_js;
-        }else{
-            this.postcondition_func = null;
-        }
-        this.postcondition_run = null;
-    },
-    
-    /** Overrides Debugger.init: function() in debugger.js line 23 */
-    wrap_selDebugger_init: function(base, fn, args/*[]*/){
-        var override = !base.runner;
-        fn.apply(base, args);   //calls the original method
-        if(override){
-            wrap(base.runner.IDETestLoop.prototype, 'resume', this, this.wrap_IDETestLoop_resume);
-            base.runner.MozillaBrowserBot.prototype.findElementOrNull = MozillaBrowserBot_findElementOrNull;
-        }
-        this.wait_timeout = (this.wait_forced && this.DEFAULT_TIMEOUT) || 0;
-        this.postcondition_timeout = 0;
-        this.postcondition_func = this.postcondition_run = null;
-    },
-    
-    /** Overrides TestLoop.prototype.resume: function() in selenium-executionloop.js line 71 */
-    wrap_IDETestLoop_resume: function(base, fn, args/*[]*/){
-        var selDebugger = this.editor.selDebugger,
-            runner = selDebugger.runner,
-            selenium = runner.selenium,
-            browserbot = selenium.browserbot,
-            LOG = runner.LOG;
-        
-        LOG.debug("currentTest.resume() - actually execute modified");
-        browserbot.runScheduledPollers();
-        
-        var command = base.currentCommand;
-        LOG.info("Executing: |" + command.command + " | " + command.target + " | " + command.value + " |");
-
-        var handler = base.commandFactory.getCommandHandler(command.command);
-        if (handler === null)
-            throw new SeleniumError("Unknown command: '" + command.command + "'");
-            
-        command.target = selenium.preprocessParameter(command.target);
-        command.value = selenium.preprocessParameter(command.value);
-        LOG.debug("Command found, going to execute " + command.command);
-        
-        runner.updateStats(command.command);
-        
-        browserbot.locator_cache = null;
-        var locator_endtime = this.wait_timeout && new Date().getTime() + this.wait_timeout;
-        var self = this;
-        (function loopFindElement(){
-            browserbot.is_element_missing = false;
-            try{
-                base.result = handler.execute(selenium, command);
-                base.waitForCondition = base.result.terminationCondition;
-                if(base.result.failed && browserbot.is_element_missing && locator_endtime && new Date().getTime() < locator_endtime)    //handles verify and assert having a failing locator
-                    return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
-                (function loopCommandCondition(){    //handles the andWait condition in replacement of continueTestWhenConditionIsTrue
-                    try{
-                        browserbot.runScheduledPollers();
-                        if(base.waitForCondition && !base.waitForCondition())
-                            return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopCommandCondition, 15);
-                        base.waitForCondition = null;
-                        var postcondition_endtime = self.postcondition_run && new Date().getTime() + self.postcondition_timeout;
-                        self.postcondition_run = self.postcondition_func;
-                        (function loopPostCondition(){    //handles the customized postcondition
-                            if(postcondition_endtime){
-                                try{
-                                    if(new Date().getTime() > postcondition_endtime)
-                                        base.result = {failed: true, failureMessage: 'Timed out on postcondition ' + self.postcondition_func.__string__};
-                                    else if(!self.postcondition_func.call(selenium))
-                                        return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopPostCondition, 15);
-                                }catch(e){
-                                     base.result = {failed: true, failureMessage: 'Exception on postcondition ' + self.postcondition_func.__string__ + '  Exception:' + extractExceptionMessage(e)};
-                                }
-                            }
-                            base.commandComplete(base.result);
-                            base.continueTest();
-                        })();
-                    }catch(e){
-                        base.result = {failed: true, failureMessage: extractExceptionMessage(e)};
-                        base.commandComplete(base.result);
-                        base.continueTest();
-                    }
-                })();
-            }catch(e){
-                if(browserbot.is_element_missing && locator_endtime && new Date().getTime() < locator_endtime)    //handles actions having a failing locator
-                    return selDebugger.state !== 2/*PAUSE_REQUESTED*/ && window.setTimeout(loopFindElement, 20);
-                if(base._handleCommandError(e))
-                    base.continueTest();
-                else
-                    base.testComplete();
-            }
-        })();
-    }
+window.editor.implicitwait = {
+    TIMEOUT_DEFAULT: 5000,
+    timeout: 0,
+    set enabled(value){ this.timeout = value ? this.TIMEOUT_DEFAULT : 0; }
 };
 
-/** 
- * Overriding for BrowserBot.prototype.findElementOrNull: function(locator, win) in selenium-browserbot.js line 1507
- * @param {String} locator
- * @param {Object} win
- */
-var MozillaBrowserBot_findElementOrNull = function(locator, win){
-    var loc = this.locator_cache || (this.locator_cache = parse_locator(locator));    //cache the parsing result of the locator. Clearing is done by resume.
-    if(!win)
-        win = this.getCurrentWindow();
-    
-    var element;
-    try{
-        element = this.findElementRecursive(loc.type, loc.string, win.document, win);
-    }catch(e){
-        if(e.isSeleniumError)
-            throw e;
-    }
-    
-    if(element){
-        element = core.firefox.unwrap(element);
-        return this.highlight(element);
-    }
-    this.is_element_missing = true; //Boolean used by "resume" to identify that the command failed to find an element
-    return null;
-}
-
 /**
- * Wraps a method call to a function on a specified context. Skips the wrapping if already done.
- * @param {Object} obj Object containing the function to intercept
- * @param {String} key Name of the function to intercept
- * @param {Object} context Object on which the intercepting function func will be applied
- * @param {Function} func  Function intercepting obj[method] : function(context, function, arguments)
+ * Handles the click event on the hourglass button
  */
-function wrap(obj, key, context, func){
-    var fn = obj[key], w;
-    if(!(w=fn.__wrap__) || w.src !== fn || w.tgt !== func ){
-        (obj[key] = function(){
-            return func.call(context, this, fn, arguments);
-        }).__wrap__ = {src:fn, tgt:func};
-    }
-}
-
-//Instantiates the plug-in
-this.editor.implicitwait = new ImplicitWait(this.editor);
-
-})();
+window.editor.window.document.getElementById("implicitwait-button").onclick = function(){
+    window.editor.implicitwait.enabled = (this.checked ^= true);
+};
